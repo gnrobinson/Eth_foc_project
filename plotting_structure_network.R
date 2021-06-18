@@ -19,7 +19,7 @@ option_list = list(
   make_option(c("-o", "--out"), type="character", default=NULL, 
               help="output name", metavar="character"),
   make_option(c("-k", "--title"), type="character", default=NULL, 
-              help="output name", metavar="character")
+              help="title of graph", metavar="character")
 )
 opt = parse_args(OptionParser(option_list = option_list))
 Labels <- read.table(opt$label)
