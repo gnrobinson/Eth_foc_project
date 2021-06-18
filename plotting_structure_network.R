@@ -17,6 +17,8 @@ option_list = list(
   make_option(c("-b","--label"), type="character", default=NULL, 
               help="list of isolate names (in order!)", metavar="character"),
   make_option(c("-o", "--out"), type="character", default=NULL, 
+              help="output name", metavar="character"),
+  make_option(c("-k", "--title"), type="character", default=NULL, 
               help="output name", metavar="character")
 )
 opt = parse_args(OptionParser(option_list = option_list))
@@ -86,7 +88,8 @@ ggraph(g, layout = "fr") +
     geom_edge_link0(width=0.1,colour="black") +
     geom_node_point(col="black",size=1, position = 'identity') +
     geom_node_text( aes(label=name), size = 3, color='black', repel = TRUE) +
-    theme_graph()
+    theme_graph() +
+    labs(title = paste(c(opt$title), collapse = " "))
 dev.off()
 
 
