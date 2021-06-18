@@ -36,7 +36,7 @@ for (i in seq_along(file_list)) {
 
 #Function  wrangles data into correct format
 data_prep <- function(data_list) {
-  INPUT <- cbind(Labels, data_list)
+  INPUT <- cbind(Labels[1], data_list)
   input <- INPUT[c(1,7:length(INPUT))]
   X <- suppressWarnings(dist(input, method = "euclidean"))
   X <- as.matrix(X, labels = T)
@@ -83,13 +83,13 @@ g <- graph_from_data_frame(edgelist, vertices = nodelist, directed = FALSE)
 
 
 #Export image of network
-tiff(file=paste0(opt$out,".tiff"),width = 2000, height = 2000,res=200)
+tiff(file=paste0(opt$out,".tiff"),width = 2000, height = 2000,res=300)
 ggraph(g, layout = "fr") +
-    geom_edge_link0(width=0.1,colour="black") +
-    geom_node_point(col="black",size=1, position = 'identity') +
+    geom_edge_link0(width=0.08,colour="black") +
+    geom_node_point(col="Black",size=1, position = 'identity') +
     geom_node_text( aes(label=name), size = 3, color='black', repel = TRUE) +
     theme_graph() +
-    labs(title = paste(c(opt$title), collapse = " "))
+  labs(title = paste(c(opt$title), collapse = " "))
 dev.off()
 
 
