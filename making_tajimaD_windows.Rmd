@@ -25,9 +25,9 @@ library(rlist)
 
 #loading total clone data
 ```{r}
-ld.geno <- read_table2("/path/to/file",
+taj.geno <- read_table2("/path/to/file",
      col_names = TRUE, col_types = cols(X4 = col_number()))
-colnames(ld.geno)[c(1,2,3,4)] = c("contig", "start_bp", "n_snps", "tajimaD")
+colnames(taj.geno)[c(1,2,3,4)] = c("contig", "start_bp", "n_snps", "tajimaD")
 ```
 
 #making 20Kb windows across the supercontigs
@@ -45,10 +45,10 @@ mkwindow_avg <- function(infile,midpoint){
 
 #Making genomic windows
 ```{r}
-N <- max(ld.geno$start_bp)
+N <- max(tal.geno$start_bp)
 x <- list()
 for (i in seq(10000, N, 10000)) {
-  Ps <- mkwindow_avg(ld.geno, i)
+  Ps <- mkwindow_avg(taj.geno, i)
   x[[paste0("element", i)]] <- Ps
 }
 
