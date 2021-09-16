@@ -9,9 +9,9 @@ library(ggplot2)
 library(rlist)
 
 #loading nucleotide data
-ld.geno <- read_table2("$FILE",
+df.geno <- read_table2("$FILE",
                        col_names = TRUE)
-colnames(ld.geno)[c(1,2,3)] = c("contig", "start_bp", "pi")
+colnames(df.geno)[c(1,2,3)] = c("contig", "start_bp", "pi")
 
 
 #making 40Kb windows across all of the supercontigs
@@ -27,10 +27,10 @@ mkwindow_avg <- function(infile,midpoint){
 
 #Making genomic windows (40Kb in size in 10Kb increments)
 ```{r}
-N <- max(ld.geno$start_bp)
+N <- max(df.geno$start_bp)
 x <- list()
 for (i in seq(10000, N, 10000)) {
-  Ps <- mkwindow_avg(ld.geno, i)
+  Ps <- mkwindow_avg(df.geno, i)
   x[[paste0("element", i)]] <- Ps
 }
 concatenated_df <- list.rbind(x)
