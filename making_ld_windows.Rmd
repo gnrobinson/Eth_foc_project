@@ -20,7 +20,7 @@ library(rlist)
 # 4 Supercontig_2.15      216     4220 0.000866  4004
 # 5 Supercontig_2.15      216     4307 1         4091
 # 6 Supercontig_2.15      216     5080 0.00304   4864
-##### This file was originally formatted from the output of VCFtools --r2 ####
+##### This file was originally formatted from the output of VCFtools/PLINK --r2 ####
 
 #loading total clone data
 ```{r}
