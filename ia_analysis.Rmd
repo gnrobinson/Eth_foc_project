@@ -1,0 +1,774 @@
+---
+title: "making rbarD plots using poppr"
+author: "Guy Robinson"
+date: "5/26/2021"
+output: html_document
+---
+
+####################################################################################################
+############### This is all of the code run for calculating the index of association. ##############
+############### In the pipeline HTML, we have added a clear figure to display the Poppr ############
+############### usage. Apologies for the mess. It was difficult to run each subsample ##############
+############### independently. #####################################################################
+####################################################################################################
+
+#loading libraries
+```{r, eval=F}
+library(tidyverse)
+library(RColorBrewer)
+library(ggplot2)
+library(vcfR)
+library(adegenet)
+library(poppr)
+library(magrittr)
+
+std <- function(x) sd(x)/sqrt(length(x))
+```
+
+
+#importing vcf file and converting into genind object
+#https://cran.r-project.org/web/packages/vcfR/vignettes/converting_data.html
+```{r, eval=F}
+file_prep <- function(file) {
+  isolate_vcf <- read.vcfR(file = file, verbose = FALSE) #import vcf file (can also be vcf.gz)
+  isolate_genind <- vcfR2genind(isolate_vcf) #converts vcf into genind format
+  isolate_genind$other$lineage <- c("SING", "SING", "SING", "SING", "SING", "T", "SING", "T", "O", "SING", "Q", "Q", "O", "J", "N", "SING", "N", "M", "M", "N", "SING", "P", "SING", "K", "N", "T", "Q", "SING", "P", "T", "N", "N", "P", "J", "J", "SING", "SING", "S", "S", "SING", "O", "SING", "SING", "T", "P", "T", "P", "R", "SING", "SING", "SING", "O", "R", "SING", "SING", "U", "SING", "SING", "E", "SING", "SING", "Q", "SING", "R", "O", "Q", "R", "SING", "SING", "R", "R", "R", "SING", "Q", "SING", "SING", "R", "O", "I", "M", "R", "E", "H", "SING", "G", "H", "F", "SING", "H", "SING", "L", "L", "O", "H", "H", "P", "R", "SING", "O", "T", "K", "E", "O", "SING", "O", "SING", "F", "G", "G", "M", "O", "Q", "P", "E", "T", "K", "R", "R", "SING", "O", "I", "U", "E", "SING", "P", "P", "R", "SING", "N", "R", "O", "O", "SING") #assigns predetermined lineages
+  pop(isolate_genind) <- isolate_genind$other$lineage #assigns lineages as populations
+  isolate_genclone <- as.genclone(isolate_genind) #creates genclone file for poppr analysis
+}
+
+ss1 <- file_prep("ethiopia_fo_structure.0_05.vcf.gz_sub1.vcf.gz_rand.vcf.gz.tail.vcf")
+ss2 <- file_prep("ethiopia_fo_structure.0_05.vcf.gz_sub1.vcf.gz_rand.vcf.gz.tail.vcf")
+ss3 <- file_prep("ethiopia_fo_structure.0_05.vcf.gz_sub1.vcf.gz_rand.vcf.gz.tail.vcf")
+ss4 <- file_prep("ethiopia_fo_structure.0_05.vcf.gz_sub1.vcf.gz_rand.vcf.gz.tail.vcf")
+ss5 <- file_prep("ethiopia_fo_structure.0_05.vcf.gz_sub1.vcf.gz_rand.vcf.gz.tail.vcf")
+ss6 <- file_prep("ethiopia_fo_structure.0_05.vcf.gz_sub1.vcf.gz_rand.vcf.gz.tail.vcf")
+ss7 <- file_prep("ethiopia_fo_structure.0_05.vcf.gz_sub1.vcf.gz_rand.vcf.gz.tail.vcf")
+ss8 <- file_prep("ethiopia_fo_structure.0_05.vcf.gz_sub1.vcf.gz_rand.vcf.gz.tail.vcf")
+ss9 <- file_prep("ethiopia_fo_structure.0_05.vcf.gz_sub1.vcf.gz_rand.vcf.gz.tail.vcf")
+ss10 <- file_prep("ethiopia_fo_structure.0_05.vcf.gz_sub1.vcf.gz_rand.vcf.gz.tail.vcf")
+
+#ss1 <- file_prep("/media/guy/Guy HardDrive/vcf_individuals_largerCollection/final_ld/data/ld/ld/eth_clonecorrected.vcf.vcf_nomiss.vcf.recode.vcf")
+
+#done
+```
+
+#non-clone corrected Ia and Rbar calculations
+```{r, eval=F}
+
+#test_ia <- ia(isolate_genclone, sample = 10, valuereturn = TRUE)
+#test_ia_clone <- ia(isolate_clone_correct, sample = 10, valuereturn = TRUE)
+set.seed(100)
+resmpl_ia_ss1 <- resample.ia(ss1, reps = 999, n=132)
+resmpl_ia_ss2 <- resample.ia(ss2, reps = 999, n=132)
+resmpl_ia_ss3 <- resample.ia(ss3, reps = 999, n=132)
+resmpl_ia_ss4 <- resample.ia(ss4, reps = 999, n=132)
+resmpl_ia_ss5 <- resample.ia(ss5, reps = 999, n=132)
+resmpl_ia_ss6 <- resample.ia(ss6, reps = 999, n=132)
+resmpl_ia_ss7 <- resample.ia(ss7, reps = 999, n=132)
+resmpl_ia_ss8 <- resample.ia(ss8, reps = 999, n=132)
+resmpl_ia_ss9 <- resample.ia(ss9, reps = 999, n=132)
+resmpl_ia_ss10 <- resample.ia(ss10, reps = 999, n=132)
+resmpl_ia_all <- rbind(resmpl_ia_ss1,
+    resmpl_ia_ss2,
+    resmpl_ia_ss3,
+    resmpl_ia_ss4,
+    resmpl_ia_ss5,
+    resmpl_ia_ss6,
+    resmpl_ia_ss7,
+    resmpl_ia_ss8,
+    resmpl_ia_ss9,
+    resmpl_ia_ss10)
+
+  write_delim(resmpl_ia_all, file = "results/all_isolates_ia_vals.txt", delim = "\t")
+resmpl_ia_all <- read_delim("results/all_isolates_ia_vals.txt", delim = "\t")
+std(resmpl_ia_all$rbarD)
+
+
+t <- ggplot(resmpl_ia_all, aes(x = rbarD)) +
+  geom_histogram(bins=100) +
+  geom_vline(xintercept = ia(ss1)[2]) +
+#  geom_vline(xintercept = 0.0702, linetype=2) +
+  geom_vline(xintercept = ia(clonecorrect(ss1))[2], linetype = 2) +
+  xlab(expression(bar(r)[d]))
+t
+
+```
+
+
+#separating populations before index of association calculation
+```{r, eval=F}
+obj1 <- seppop(ss1) #separates the genclone objects into a list of different populations
+obj2 <- seppop(ss2)
+obj3 <- seppop(ss3)
+obj4 <- seppop(ss4)
+obj5 <- seppop(ss5)
+obj6 <- seppop(ss6)
+obj7 <- seppop(ss7)
+obj8 <- seppop(ss8)
+obj9 <- seppop(ss9)
+obj10 <- seppop(ss10)
+
+####SS1
+sing_genclone1 <- obj1$SING
+e_genclone1 <- obj1$E
+f_genclone1 <- obj1$F
+g_genclone1 <- obj1$G
+h_genclone1 <- obj1$H
+i_genclone1 <- obj1$I
+k_genclone1 <- obj1$K
+l_genclone1 <- obj1$L
+m_genclone1 <- obj1$M
+n_genclone1 <- obj1$N
+o_genclone1 <- obj1$O
+p_genclone1 <- obj1$P
+q_genclone1 <- obj1$Q
+r_genclone1 <- obj1$R
+s_genclone1 <- obj1$S
+t_genclone1 <- obj1$T
+
+####SS2
+sing_genclone2 <- obj2$SING
+e_genclone2 <- obj2$E
+f_genclone2 <- obj2$F
+g_genclone2 <- obj2$G
+h_genclone2 <- obj2$H
+i_genclone2 <- obj2$I
+k_genclone2 <- obj2$K
+l_genclone2 <- obj2$L
+m_genclone2 <- obj2$M
+n_genclone2 <- obj2$N
+o_genclone2 <- obj2$O
+p_genclone2 <- obj2$P
+q_genclone2 <- obj2$Q
+r_genclone2 <- obj2$R
+s_genclone2 <- obj2$S
+t_genclone2 <- obj2$T
+
+####SS3
+sing_genclone3 <- obj3$SING
+e_genclone3 <- obj3$E
+f_genclone3 <- obj3$F
+g_genclone3 <- obj3$G
+h_genclone3 <- obj3$H
+i_genclone3 <- obj3$I
+k_genclone3 <- obj3$K
+l_genclone3 <- obj3$L
+m_genclone3 <- obj3$M
+n_genclone3 <- obj3$N
+o_genclone3 <- obj3$O
+p_genclone3 <- obj3$P
+q_genclone3 <- obj3$Q
+r_genclone3 <- obj3$R
+s_genclone3 <- obj3$S
+t_genclone3 <- obj3$T
+
+####SS4
+sing_genclone4 <- obj4$SING
+e_genclone4 <- obj4$E
+f_genclone4 <- obj4$F
+g_genclone4 <- obj4$G
+h_genclone4 <- obj4$H
+i_genclone4 <- obj4$I
+k_genclone4 <- obj4$K
+l_genclone4 <- obj4$L
+m_genclone4 <- obj4$M
+n_genclone4 <- obj4$N
+o_genclone4 <- obj4$O
+p_genclone4 <- obj4$P
+q_genclone4 <- obj4$Q
+r_genclone4 <- obj4$R
+s_genclone4 <- obj4$S
+t_genclone4 <- obj4$T
+
+####SS5
+sing_genclone5 <- obj5$SING
+e_genclone5 <- obj5$E
+f_genclone5 <- obj5$F
+g_genclone5 <- obj5$G
+h_genclone5 <- obj5$H
+i_genclone5 <- obj5$I
+k_genclone5 <- obj5$K
+l_genclone5 <- obj5$L
+m_genclone5 <- obj5$M
+n_genclone5 <- obj5$N
+o_genclone5 <- obj5$O
+p_genclone5 <- obj5$P
+q_genclone5 <- obj5$Q
+r_genclone5 <- obj5$R
+s_genclone5 <- obj5$S
+t_genclone5 <- obj5$T
+
+####SS6
+sing_genclone6 <- obj6$SING
+e_genclone6 <- obj6$E
+f_genclone6 <- obj6$F
+g_genclone6 <- obj6$G
+h_genclone6 <- obj6$H
+i_genclone6 <- obj6$I
+k_genclone6 <- obj6$K
+l_genclone6 <- obj6$L
+m_genclone6 <- obj6$M
+n_genclone6 <- obj6$N
+o_genclone6 <- obj6$O
+p_genclone6 <- obj6$P
+q_genclone6 <- obj6$Q
+r_genclone6 <- obj6$R
+s_genclone6 <- obj6$S
+t_genclone6 <- obj6$T
+
+####SS7
+sing_genclone7 <- obj7$SING
+e_genclone7 <- obj7$E
+f_genclone7 <- obj7$F
+g_genclone7 <- obj7$G
+h_genclone7 <- obj7$H
+i_genclone7 <- obj7$I
+k_genclone7 <- obj7$K
+l_genclone7 <- obj7$L
+m_genclone7 <- obj7$M
+n_genclone7 <- obj7$N
+o_genclone7 <- obj7$O
+p_genclone7 <- obj7$P
+q_genclone7 <- obj7$Q
+r_genclone7 <- obj7$R
+s_genclone7 <- obj7$S
+t_genclone7 <- obj7$T
+
+####SS8
+sing_genclone8 <- obj8$SING
+e_genclone8 <- obj8$E
+f_genclone8 <- obj8$F
+g_genclone8 <- obj8$G
+h_genclone8 <- obj8$H
+i_genclone8 <- obj8$I
+k_genclone8 <- obj8$K
+l_genclone8 <- obj8$L
+m_genclone8 <- obj8$M
+n_genclone8 <- obj8$N
+o_genclone8 <- obj8$O
+p_genclone8 <- obj8$P
+q_genclone8 <- obj8$Q
+r_genclone8 <- obj8$R
+s_genclone8 <- obj8$S
+t_genclone8 <- obj8$T
+
+
+####SS9
+sing_genclone9 <- obj9$SING
+e_genclone9 <- obj9$E
+f_genclone9 <- obj9$F
+g_genclone9 <- obj9$G
+h_genclone9 <- obj9$H
+i_genclone9 <- obj9$I
+k_genclone9 <- obj9$K
+l_genclone9 <- obj9$L
+m_genclone9 <- obj9$M
+n_genclone9 <- obj9$N
+o_genclone9 <- obj9$O
+p_genclone9 <- obj9$P
+q_genclone9 <- obj9$Q
+r_genclone9 <- obj9$R
+s_genclone9 <- obj9$S
+t_genclone9 <- obj9$T
+
+####SS10
+sing_genclone10 <- obj1$SING
+e_genclone10 <- obj10$E
+f_genclone10 <- obj10$F
+g_genclone10 <- obj10$G
+h_genclone10 <- obj10$H
+i_genclone10 <- obj10$I
+j_genclone10 <- obj10$J
+k_genclone10 <- obj10$K
+l_genclone10 <- obj10$L
+m_genclone10 <- obj10$M
+n_genclone10 <- obj10$N
+o_genclone10 <- obj10$O
+p_genclone10 <- obj10$P
+q_genclone10 <- obj10$Q
+r_genclone10 <- obj10$R
+s_genclone10 <- obj10$S
+t_genclone10 <- obj10$T
+U_genclone10 <- obj10$U
+  
+```
+
+#calculations of rbar and Ia -- Sing
+```{r, eval=F}
+resmpl_ia_ss1_sing <- resample.ia(sing_genclone1, reps = 999, n=(nrow(as.data.frame(sing_genclone1))-1))
+resmpl_ia_ss2_sing <- resample.ia(sing_genclone2, reps = 999, n=(nrow(as.data.frame(sing_genclone1))-1))
+resmpl_ia_ss3_sing <- resample.ia(sing_genclone3, reps = 999, n=(nrow(as.data.frame(sing_genclone1))-1))
+resmpl_ia_ss4_sing <- resample.ia(sing_genclone4, reps = 999, n=(nrow(as.data.frame(sing_genclone1))-1))
+resmpl_ia_ss5_sing <- resample.ia(sing_genclone5, reps = 999, n=(nrow(as.data.frame(sing_genclone1))-1))
+resmpl_ia_ss6_sing <- resample.ia(sing_genclone6, reps = 999, n=(nrow(as.data.frame(sing_genclone1))-1))
+resmpl_ia_ss7_sing <- resample.ia(sing_genclone7, reps = 999, n=(nrow(as.data.frame(sing_genclone1))-1))
+resmpl_ia_ss8_sing <- resample.ia(sing_genclone8, reps = 999, n=(nrow(as.data.frame(sing_genclone1))-1))
+resmpl_ia_ss9_sing <- resample.ia(sing_genclone9, reps = 999, n=(nrow(as.data.frame(sing_genclone1))-1))
+resmpl_ia_ss10_sing <- resample.ia(sing_genclone10, reps = 999, n=(nrow(as.data.frame(sing_genclone1))-1))
+resmpl_ia_sing <- rbind(resmpl_ia_ss1_sing,
+    resmpl_ia_ss2_sing,
+    resmpl_ia_ss3_sing,
+    resmpl_ia_ss4_sing,
+    resmpl_ia_ss5_sing,
+    resmpl_ia_ss6_sing,
+    resmpl_ia_ss7_sing,
+    resmpl_ia_ss8_sing,
+    resmpl_ia_ss9_sing,
+    resmpl_ia_ss10_sing)
+```
+
+#calculations of rbar and Ia -- e
+```{r, eval=F}
+resmpl_ia_ss1_e <- resample.ia(e_genclone1, reps = 999, n=(nrow(as.data.frame(e_genclone1))-1))
+resmpl_ia_ss2_e <- resample.ia(e_genclone2, reps = 999, n=(nrow(as.data.frame(e_genclone1))-1))
+resmpl_ia_ss3_e <- resample.ia(e_genclone3, reps = 999, n=(nrow(as.data.frame(e_genclone1))-1))
+resmpl_ia_ss4_e <- resample.ia(e_genclone4, reps = 999, n=(nrow(as.data.frame(e_genclone1))-1))
+resmpl_ia_ss5_e <- resample.ia(e_genclone5, reps = 999, n=(nrow(as.data.frame(e_genclone1))-1))
+resmpl_ia_ss6_e <- resample.ia(e_genclone6, reps = 999, n=(nrow(as.data.frame(e_genclone1))-1))
+resmpl_ia_ss7_e <- resample.ia(e_genclone7, reps = 999, n=(nrow(as.data.frame(e_genclone1))-1))
+resmpl_ia_ss8_e <- resample.ia(e_genclone8, reps = 999, n=(nrow(as.data.frame(e_genclone1))-1))
+resmpl_ia_ss9_e <- resample.ia(e_genclone9, reps = 999, n=(nrow(as.data.frame(e_genclone1))-1))
+resmpl_ia_ss10_e <- resample.ia(e_genclone10, reps = 999, n=(nrow(as.data.frame(e_genclone1))-1))
+resmpl_ia_e <- rbind(resmpl_ia_ss1_e,
+    resmpl_ia_ss2_e,
+    resmpl_ia_ss3_e,
+    resmpl_ia_ss4_e,
+    resmpl_ia_ss5_e,
+    resmpl_ia_ss6_e,
+    resmpl_ia_ss7_e,
+    resmpl_ia_ss8_e,
+    resmpl_ia_ss9_e,
+    resmpl_ia_ss10_e)
+```
+
+#calculations of rbar and Ia -- f
+```{r, eval=F}
+resmpl_ia_ss1_f <- resample.ia(f_genclone1, reps = 999, n=(nrow(as.data.frame(f_genclone1))-1))
+resmpl_ia_ss2_f <- resample.ia(f_genclone2, reps = 999, n=(nrow(as.data.frame(f_genclone1))-1))
+resmpl_ia_ss3_f <- resample.ia(f_genclone3, reps = 999, n=(nrow(as.data.frame(f_genclone1))-1))
+resmpl_ia_ss4_f <- resample.ia(f_genclone4, reps = 999, n=(nrow(as.data.frame(f_genclone1))-1))
+resmpl_ia_ss5_f <- resample.ia(f_genclone5, reps = 999, n=(nrow(as.data.frame(f_genclone1))-1))
+resmpl_ia_ss6_f <- resample.ia(f_genclone6, reps = 999, n=(nrow(as.data.frame(f_genclone1))-1))
+resmpl_ia_ss7_f <- resample.ia(f_genclone7, reps = 999, n=(nrow(as.data.frame(f_genclone1))-1))
+resmpl_ia_ss8_f <- resample.ia(f_genclone8, reps = 999, n=(nrow(as.data.frame(f_genclone1))-1))
+resmpl_ia_ss9_f <- resample.ia(f_genclone9, reps = 999, n=(nrow(as.data.frame(f_genclone1))-1))
+resmpl_ia_ss10_f <- resample.ia(f_genclone10, reps = 999, n=(nrow(as.data.frame(f_genclone1))-1))
+resmpl_ia_f <- rbind(resmpl_ia_ss1_f,
+    resmpl_ia_ss2_f,
+    resmpl_ia_ss3_f,
+    resmpl_ia_ss4_f,
+    resmpl_ia_ss5_f,
+    resmpl_ia_ss6_f,
+    resmpl_ia_ss7_f,
+    resmpl_ia_ss8_f,
+    resmpl_ia_ss9_f,
+    resmpl_ia_ss10_f)
+```
+
+#calculations of rbar and Ia -- g #####Ignored due to too few isolates
+```{r, eval=F}
+#resmpl_ia_ss1_g <- resample.ia(g_genclone1, reps = 999, n=(nrow(as.data.frame(g_genclone1))-1))
+#resmpl_ia_ss2_g <- resample.ia(g_genclone2, reps = 999, n=(nrow(as.data.frame(g_genclone1))-1))
+#resmpl_ia_ss3_g <- resample.ia(g_genclone3, reps = 999, #n=(nrow(as.data.frame(g_genclone1))-1))
+#resmpl_ia_ss4_g <- resample.ia(g_genclone4, reps = 999, #n=(nrow(as.data.frame(g_genclone1))-1))
+#resmpl_ia_ss5_g <- resample.ia(g_genclone5, reps = 999, #n=(nrow(as.data.frame(g_genclone1))-1))
+#resmpl_ia_ss6_g <- resample.ia(g_genclone6, reps = 999, #n=(nrow(as.data.frame(g_genclone1))-1))
+#resmpl_ia_ss7_g <- resample.ia(g_genclone7, reps = 999, #n=(nrow(as.data.frame(g_genclone1))-1))
+#resmpl_ia_ss8_g <- resample.ia(g_genclone8, reps = 999, #n=(nrow(as.data.frame(g_genclone1))-1))
+#resmpl_ia_ss9_g <- resample.ia(g_genclone9, reps = 999, #n=(nrow(as.data.frame(g_genclone1))-1))
+#resmpl_ia_ss10_g <- resample.ia(g_genclone10, reps = 999, #n=(nrow(as.data.frame(g_genclone1))-1))
+#resmpl_ia_g <- rbind(resmpl_ia_ss1_g,
+#    resmpl_ia_ss2_g,
+#    resmpl_ia_ss3_g,
+#    resmpl_ia_ss4_g,
+#    resmpl_ia_ss5_g,
+#    resmpl_ia_ss6_g,
+#    resmpl_ia_ss7_g,
+#    resmpl_ia_ss8_g,
+#    resmpl_ia_ss9_g,
+#    resmpl_ia_ss10_g)
+```
+
+#calculations of rbar and Ia -- h
+```{r, eval=F}
+resmpl_ia_ss1_h <- resample.ia(h_genclone1, reps = 999, n=(nrow(as.data.frame(h_genclone1))-1))
+resmpl_ia_ss2_h <- resample.ia(h_genclone2, reps = 999, n=(nrow(as.data.frame(h_genclone1))-1))
+resmpl_ia_ss3_h <- resample.ia(h_genclone3, reps = 999, n=(nrow(as.data.frame(h_genclone1))-1))
+resmpl_ia_ss4_h <- resample.ia(h_genclone4, reps = 999, n=(nrow(as.data.frame(h_genclone1))-1))
+resmpl_ia_ss5_h <- resample.ia(h_genclone5, reps = 999, n=(nrow(as.data.frame(h_genclone1))-1))
+resmpl_ia_ss6_h <- resample.ia(h_genclone6, reps = 999, n=(nrow(as.data.frame(h_genclone1))-1))
+resmpl_ia_ss7_h <- resample.ia(h_genclone7, reps = 999, n=(nrow(as.data.frame(h_genclone1))-1))
+resmpl_ia_ss8_h <- resample.ia(h_genclone8, reps = 999, n=(nrow(as.data.frame(h_genclone1))-1))
+resmpl_ia_ss9_h <- resample.ia(h_genclone9, reps = 999, n=(nrow(as.data.frame(h_genclone1))-1))
+resmpl_ia_ss10_h <- resample.ia(h_genclone10, reps = 999, n=(nrow(as.data.frame(h_genclone1))-1))
+resmpl_ia_h <- rbind(resmpl_ia_ss1_h,
+    resmpl_ia_ss2_h,
+    resmpl_ia_ss3_h,
+    resmpl_ia_ss4_h,
+    resmpl_ia_ss5_h,
+    resmpl_ia_ss6_h,
+    resmpl_ia_ss7_h,
+    resmpl_ia_ss8_h,
+    resmpl_ia_ss9_h,
+    resmpl_ia_ss10_h)
+```
+
+#calculations of rbar and Ia -- i
+```{r, eval=F}
+resmpl_ia_ss1_i <- resample.ia(i_genclone1, reps = 999, n=(nrow(as.data.frame(i_genclone1))-1))
+resmpl_ia_ss2_i <- resample.ia(i_genclone2, reps = 999, n=(nrow(as.data.frame(i_genclone1))-1))
+resmpl_ia_ss3_i <- resample.ia(i_genclone3, reps = 999, n=(nrow(as.data.frame(i_genclone1))-1))
+resmpl_ia_ss4_i <- resample.ia(i_genclone4, reps = 999, n=(nrow(as.data.frame(i_genclone1))-1))
+resmpl_ia_ss5_i <- resample.ia(i_genclone5, reps = 999, n=(nrow(as.data.frame(i_genclone1))-1))
+resmpl_ia_ss6_i <- resample.ia(i_genclone6, reps = 999, n=(nrow(as.data.frame(i_genclone1))-1))
+resmpl_ia_ss7_i <- resample.ia(i_genclone7, reps = 999, n=(nrow(as.data.frame(i_genclone1))-1))
+resmpl_ia_ss8_i <- resample.ia(i_genclone8, reps = 999, n=(nrow(as.data.frame(i_genclone1))-1))
+resmpl_ia_ss9_i <- resample.ia(i_genclone9, reps = 999, n=(nrow(as.data.frame(i_genclone1))-1))
+resmpl_ia_ss10_i <- resample.ia(i_genclone10, reps = 999, n=(nrow(as.data.frame(i_genclone1))-1))
+resmpl_ia_i <- rbind(resmpl_ia_ss1_i,
+    resmpl_ia_ss2_i,
+    resmpl_ia_ss3_i,
+    resmpl_ia_ss4_i,
+    resmpl_ia_ss5_i,
+    resmpl_ia_ss6_i,
+    resmpl_ia_ss7_i,
+    resmpl_ia_ss8_i,
+    resmpl_ia_ss9_i,
+    resmpl_ia_ss10_i)
+```
+
+#calculations of rbar and Ia -- k
+```{r, eval=F}
+resmpl_ia_ss1_k <- resample.ia(k_genclone1, reps = 999, n=(nrow(as.data.frame(k_genclone1))-1))
+resmpl_ia_ss2_k <- resample.ia(k_genclone2, reps = 999, n=(nrow(as.data.frame(k_genclone1))-1))
+resmpl_ia_ss3_k <- resample.ia(k_genclone3, reps = 999, n=(nrow(as.data.frame(k_genclone1))-1))
+resmpl_ia_ss4_k <- resample.ia(k_genclone4, reps = 999, n=(nrow(as.data.frame(k_genclone1))-1))
+resmpl_ia_ss5_k <- resample.ia(k_genclone5, reps = 999, n=(nrow(as.data.frame(k_genclone1))-1))
+resmpl_ia_ss6_k <- resample.ia(k_genclone6, reps = 999, n=(nrow(as.data.frame(k_genclone1))-1))
+resmpl_ia_ss7_k <- resample.ia(k_genclone7, reps = 999, n=(nrow(as.data.frame(k_genclone1))-1))
+resmpl_ia_ss8_k <- resample.ia(k_genclone8, reps = 999, n=(nrow(as.data.frame(k_genclone1))-1))
+resmpl_ia_ss9_k <- resample.ia(k_genclone9, reps = 999, n=(nrow(as.data.frame(k_genclone1))-1))
+resmpl_ia_ss10_k <- resample.ia(k_genclone10, reps = 999, n=(nrow(as.data.frame(k_genclone1))-1))
+resmpl_ia_k <- rbind(resmpl_ia_ss1_k,
+    resmpl_ia_ss2_k,
+    resmpl_ia_ss3_k,
+    resmpl_ia_ss4_k,
+    resmpl_ia_ss5_k,
+    resmpl_ia_ss6_k,
+    resmpl_ia_ss7_k,
+    resmpl_ia_ss8_k,
+    resmpl_ia_ss9_k,
+    resmpl_ia_ss10_k)
+```
+
+#calculations of rbar and Ia -- l
+```{r, eval=F}
+resmpl_ia_ss1_l <- resample.ia(l_genclone1, reps = 999, n=(nrow(as.data.frame(l_genclone1))-1))
+resmpl_ia_ss2_l <- resample.ia(l_genclone2, reps = 999, n=(nrow(as.data.frame(l_genclone1))-1))
+resmpl_ia_ss3_l <- resample.ia(l_genclone3, reps = 999, n=(nrow(as.data.frame(l_genclone1))-1))
+resmpl_ia_ss4_l <- resample.ia(l_genclone4, reps = 999, n=(nrow(as.data.frame(l_genclone1))-1))
+resmpl_ia_ss5_l <- resample.ia(l_genclone5, reps = 999, n=(nrow(as.data.frame(l_genclone1))-1))
+resmpl_ia_ss6_l <- resample.ia(l_genclone6, reps = 999, n=(nrow(as.data.frame(l_genclone1))-1))
+resmpl_ia_ss7_l <- resample.ia(l_genclone7, reps = 999, n=(nrow(as.data.frame(l_genclone1))-1))
+resmpl_ia_ss8_l <- resample.ia(l_genclone8, reps = 999, n=(nrow(as.data.frame(l_genclone1))-1))
+resmpl_ia_ss9_l <- resample.ia(l_genclone9, reps = 999, n=(nrow(as.data.frame(l_genclone1))-1))
+resmpl_ia_ss10_l <- resample.ia(l_genclone10, reps = 999, n=(nrow(as.data.frame(l_genclone1))-1))
+resmpl_ia_l <- rbind(resmpl_ia_ss1_l,
+    resmpl_ia_ss2_l,
+    resmpl_ia_ss3_l,
+    resmpl_ia_ss4_l,
+    resmpl_ia_ss5_l,
+    resmpl_ia_ss6_l,
+    resmpl_ia_ss7_l,
+    resmpl_ia_ss8_l,
+    resmpl_ia_ss9_l,
+    resmpl_ia_ss10_l)
+```
+
+#calculations of rbar and Ia -- m
+```{r, eval=F}
+resmpl_ia_ss1_m <- resample.ia(m_genclone1, reps = 999, n=(nrow(as.data.frame(m_genclone1))-1))
+resmpl_ia_ss2_m <- resample.ia(m_genclone2, reps = 999, n=(nrow(as.data.frame(m_genclone1))-1))
+resmpl_ia_ss3_m <- resample.ia(m_genclone3, reps = 999, n=(nrow(as.data.frame(m_genclone1))-1))
+resmpl_ia_ss4_m <- resample.ia(m_genclone4, reps = 999, n=(nrow(as.data.frame(m_genclone1))-1))
+resmpl_ia_ss5_m <- resample.ia(m_genclone5, reps = 999, n=(nrow(as.data.frame(m_genclone1))-1))
+resmpl_ia_ss6_m <- resample.ia(m_genclone6, reps = 999, n=(nrow(as.data.frame(m_genclone1))-1))
+resmpl_ia_ss7_m <- resample.ia(m_genclone7, reps = 999, n=(nrow(as.data.frame(m_genclone1))-1))
+resmpl_ia_ss8_m <- resample.ia(m_genclone8, reps = 999, n=(nrow(as.data.frame(m_genclone1))-1))
+resmpl_ia_ss9_m <- resample.ia(m_genclone9, reps = 999, n=(nrow(as.data.frame(m_genclone1))-1))
+resmpl_ia_ss10_m <- resample.ia(m_genclone10, reps = 999, n=(nrow(as.data.frame(m_genclone1))-1))
+resmpl_ia_m <- rbind(resmpl_ia_ss1_m,
+    resmpl_ia_ss2_m,
+    resmpl_ia_ss3_m,
+    resmpl_ia_ss4_m,
+    resmpl_ia_ss5_m,
+    resmpl_ia_ss6_m,
+    resmpl_ia_ss7_m,
+    resmpl_ia_ss8_m,
+    resmpl_ia_ss9_m,
+    resmpl_ia_ss10_m)
+```
+
+#calculations of rbar and Ia -- n
+```{r, eval=F}
+resmpl_ia_ss1_n <- resample.ia(n_genclone1, reps = 999, n=(nrow(as.data.frame(n_genclone1))-1))
+resmpl_ia_ss2_n <- resample.ia(n_genclone2, reps = 999, n=(nrow(as.data.frame(n_genclone1))-1))
+resmpl_ia_ss3_n <- resample.ia(n_genclone3, reps = 999, n=(nrow(as.data.frame(n_genclone1))-1))
+resmpl_ia_ss4_n <- resample.ia(n_genclone4, reps = 999, n=(nrow(as.data.frame(n_genclone1))-1))
+resmpl_ia_ss5_n <- resample.ia(n_genclone5, reps = 999, n=(nrow(as.data.frame(n_genclone1))-1))
+resmpl_ia_ss6_n <- resample.ia(n_genclone6, reps = 999, n=(nrow(as.data.frame(n_genclone1))-1))
+resmpl_ia_ss7_n <- resample.ia(n_genclone7, reps = 999, n=(nrow(as.data.frame(n_genclone1))-1))
+resmpl_ia_ss8_n <- resample.ia(n_genclone8, reps = 999, n=(nrow(as.data.frame(n_genclone1))-1))
+resmpl_ia_ss9_n <- resample.ia(n_genclone9, reps = 999, n=(nrow(as.data.frame(n_genclone1))-1))
+resmpl_ia_ss10_n <- resample.ia(n_genclone10, reps = 999, n=(nrow(as.data.frame(n_genclone1))-1))
+resmpl_ia_n <- rbind(resmpl_ia_ss1_n,
+    resmpl_ia_ss2_n,
+    resmpl_ia_ss3_n,
+    resmpl_ia_ss4_n,
+    resmpl_ia_ss5_n,
+    resmpl_ia_ss6_n,
+    resmpl_ia_ss7_n,
+    resmpl_ia_ss8_n,
+    resmpl_ia_ss9_n,
+    resmpl_ia_ss10_n)
+```
+
+#calculations of rbar and Ia -- o
+```{r, eval=F}
+resmpl_ia_ss1_o <- resample.ia(o_genclone1, reps = 999, n=(nrow(as.data.frame(o_genclone1))-1))
+resmpl_ia_ss2_o <- resample.ia(o_genclone2, reps = 999, n=(nrow(as.data.frame(o_genclone1))-1))
+resmpl_ia_ss3_o <- resample.ia(o_genclone3, reps = 999, n=(nrow(as.data.frame(o_genclone1))-1))
+resmpl_ia_ss4_o <- resample.ia(o_genclone4, reps = 999, n=(nrow(as.data.frame(o_genclone1))-1))
+resmpl_ia_ss5_o <- resample.ia(o_genclone5, reps = 999, n=(nrow(as.data.frame(o_genclone1))-1))
+resmpl_ia_ss6_o <- resample.ia(o_genclone6, reps = 999, n=(nrow(as.data.frame(o_genclone1))-1))
+resmpl_ia_ss7_o <- resample.ia(o_genclone7, reps = 999, n=(nrow(as.data.frame(o_genclone1))-1))
+resmpl_ia_ss8_o <- resample.ia(o_genclone8, reps = 999, n=(nrow(as.data.frame(o_genclone1))-1))
+resmpl_ia_ss9_o <- resample.ia(o_genclone9, reps = 999, n=(nrow(as.data.frame(o_genclone1))-1))
+resmpl_ia_ss10_o <- resample.ia(o_genclone10, reps = 999, n=(nrow(as.data.frame(o_genclone1))-1))
+resmpl_ia_o <- rbind(resmpl_ia_ss1_o,
+    resmpl_ia_ss2_o,
+    resmpl_ia_ss3_o,
+    resmpl_ia_ss4_o,
+    resmpl_ia_ss5_o,
+    resmpl_ia_ss6_o,
+    resmpl_ia_ss7_o,
+    resmpl_ia_ss8_o,
+    resmpl_ia_ss9_o,
+    resmpl_ia_ss10_o)
+```
+
+#calculations of rbar and Ia -- p
+```{r, eval=F}
+resmpl_ia_ss1_p <- resample.ia(p_genclone1, reps = 999, n=(nrow(as.data.frame(p_genclone1))-1))
+resmpl_ia_ss2_p <- resample.ia(p_genclone2, reps = 999, n=(nrow(as.data.frame(p_genclone1))-1))
+resmpl_ia_ss3_p <- resample.ia(p_genclone3, reps = 999, n=(nrow(as.data.frame(p_genclone1))-1))
+resmpl_ia_ss4_p <- resample.ia(p_genclone4, reps = 999, n=(nrow(as.data.frame(p_genclone1))-1))
+resmpl_ia_ss5_p <- resample.ia(p_genclone5, reps = 999, n=(nrow(as.data.frame(p_genclone1))-1))
+resmpl_ia_ss6_p <- resample.ia(p_genclone6, reps = 999, n=(nrow(as.data.frame(p_genclone1))-1))
+resmpl_ia_ss7_p <- resample.ia(p_genclone7, reps = 999, n=(nrow(as.data.frame(p_genclone1))-1))
+resmpl_ia_ss8_p <- resample.ia(p_genclone8, reps = 999, n=(nrow(as.data.frame(p_genclone1))-1))
+resmpl_ia_ss9_p <- resample.ia(p_genclone9, reps = 999, n=(nrow(as.data.frame(p_genclone1))-1))
+resmpl_ia_ss10_p <- resample.ia(p_genclone10, reps = 999, n=(nrow(as.data.frame(p_genclone1))-1))
+resmpl_ia_p <- rbind(resmpl_ia_ss1_p,
+    resmpl_ia_ss2_p,
+    resmpl_ia_ss3_p,
+    resmpl_ia_ss4_p,
+    resmpl_ia_ss5_p,
+    resmpl_ia_ss6_p,
+    resmpl_ia_ss7_p,
+    resmpl_ia_ss8_p,
+    resmpl_ia_ss9_p,
+    resmpl_ia_ss10_p)
+```
+
+#calculations of rbar and Ia -- q
+```{r, eval=F}
+resmpl_ia_ss1_q <- resample.ia(q_genclone1, reps = 999, n=(nrow(as.data.frame(q_genclone1))-1))
+resmpl_ia_ss2_q <- resample.ia(q_genclone2, reps = 999, n=(nrow(as.data.frame(q_genclone1))-1))
+resmpl_ia_ss3_q <- resample.ia(q_genclone3, reps = 999, n=(nrow(as.data.frame(q_genclone1))-1))
+resmpl_ia_ss4_q <- resample.ia(q_genclone4, reps = 999, n=(nrow(as.data.frame(q_genclone1))-1))
+resmpl_ia_ss5_q <- resample.ia(q_genclone5, reps = 999, n=(nrow(as.data.frame(q_genclone1))-1))
+resmpl_ia_ss6_q <- resample.ia(q_genclone6, reps = 999, n=(nrow(as.data.frame(q_genclone1))-1))
+resmpl_ia_ss7_q <- resample.ia(q_genclone7, reps = 999, n=(nrow(as.data.frame(q_genclone1))-1))
+resmpl_ia_ss8_q <- resample.ia(q_genclone8, reps = 999, n=(nrow(as.data.frame(q_genclone1))-1))
+resmpl_ia_ss9_q <- resample.ia(q_genclone9, reps = 999, n=(nrow(as.data.frame(q_genclone1))-1))
+resmpl_ia_ss10_q <- resample.ia(q_genclone10, reps = 999, n=(nrow(as.data.frame(q_genclone1))-1))
+resmpl_ia_q <- rbind(resmpl_ia_ss1_q,
+    resmpl_ia_ss2_q,
+    resmpl_ia_ss3_q,
+    resmpl_ia_ss4_q,
+    resmpl_ia_ss5_q,
+    resmpl_ia_ss6_q,
+    resmpl_ia_ss7_q,
+    resmpl_ia_ss8_q,
+    resmpl_ia_ss9_q,
+    resmpl_ia_ss10_q)
+```
+
+#calculations of rbar and Ia -- r
+```{r, eval=F}
+resmpl_ia_ss1_r <- resample.ia(r_genclone1, reps = 999, n=(nrow(as.data.frame(r_genclone1))-1))
+resmpl_ia_ss2_r <- resample.ia(r_genclone2, reps = 999, n=(nrow(as.data.frame(r_genclone1))-1))
+resmpl_ia_ss3_r <- resample.ia(r_genclone3, reps = 999, n=(nrow(as.data.frame(r_genclone1))-1))
+resmpl_ia_ss4_r <- resample.ia(r_genclone4, reps = 999, n=(nrow(as.data.frame(r_genclone1))-1))
+resmpl_ia_ss5_r <- resample.ia(r_genclone5, reps = 999, n=(nrow(as.data.frame(r_genclone1))-1))
+resmpl_ia_ss6_r <- resample.ia(r_genclone6, reps = 999, n=(nrow(as.data.frame(r_genclone1))-1))
+resmpl_ia_ss7_r <- resample.ia(r_genclone7, reps = 999, n=(nrow(as.data.frame(r_genclone1))-1))
+resmpl_ia_ss8_r <- resample.ia(r_genclone8, reps = 999, n=(nrow(as.data.frame(r_genclone1))-1))
+resmpl_ia_ss9_r <- resample.ia(r_genclone9, reps = 999, n=(nrow(as.data.frame(r_genclone1))-1))
+resmpl_ia_ss10_r <- resample.ia(r_genclone10, reps = 999, n=(nrow(as.data.frame(r_genclone1))-1))
+resmpl_ia_r <- rbind(resmpl_ia_ss1_r,
+    resmpl_ia_ss2_r,
+    resmpl_ia_ss3_r,
+    resmpl_ia_ss4_r,
+    resmpl_ia_ss5_r,
+    resmpl_ia_ss6_r,
+    resmpl_ia_ss7_r,
+    resmpl_ia_ss8_r,
+    resmpl_ia_ss9_r,
+    resmpl_ia_ss10_r)
+```
+
+#calculations of rbar and Ia -- s
+```{r, eval=F}
+resmpl_ia_ss1_s <- resample.ia(s_genclone1, reps = 999, n=(nrow(as.data.frame(s_genclone1))-1))
+resmpl_ia_ss2_s <- resample.ia(s_genclone2, reps = 999, n=(nrow(as.data.frame(s_genclone1))-1))
+resmpl_ia_ss3_s <- resample.ia(s_genclone3, reps = 999, n=(nrow(as.data.frame(s_genclone1))-1))
+resmpl_ia_ss4_s <- resample.ia(s_genclone4, reps = 999, n=(nrow(as.data.frame(s_genclone1))-1))
+resmpl_ia_ss5_s <- resample.ia(s_genclone5, reps = 999, n=(nrow(as.data.frame(s_genclone1))-1))
+resmpl_ia_ss6_s <- resample.ia(s_genclone6, reps = 999, n=(nrow(as.data.frame(s_genclone1))-1))
+resmpl_ia_ss7_s <- resample.ia(s_genclone7, reps = 999, n=(nrow(as.data.frame(s_genclone1))-1))
+resmpl_ia_ss8_s <- resample.ia(s_genclone8, reps = 999, n=(nrow(as.data.frame(s_genclone1))-1))
+resmpl_ia_ss9_s <- resample.ia(s_genclone9, reps = 999, n=(nrow(as.data.frame(s_genclone1))-1))
+resmpl_ia_ss10_s <- resample.ia(s_genclone10, reps = 999, n=(nrow(as.data.frame(s_genclone1))-1))
+resmpl_ia_s <- rbind(resmpl_ia_ss1_s,
+    resmpl_ia_ss2_s,
+    resmpl_ia_ss3_s,
+    resmpl_ia_ss4_s,
+    resmpl_ia_ss5_s,
+    resmpl_ia_ss6_s,
+    resmpl_ia_ss7_s,
+    resmpl_ia_ss8_s,
+    resmpl_ia_ss9_s,
+    resmpl_ia_ss10_s)
+```
+
+#calculations of rbar and Ia -- t
+```{r, eval=F}
+resmpl_ia_ss1_t <- resample.ia(t_genclone1, reps = 999, n=(nrow(as.data.frame(t_genclone1))-1))
+resmpl_ia_ss2_t <- resample.ia(t_genclone2, reps = 999, n=(nrow(as.data.frame(t_genclone1))-1))
+resmpl_ia_ss3_t <- resample.ia(t_genclone3, reps = 999, n=(nrow(as.data.frame(t_genclone1))-1))
+resmpl_ia_ss4_t <- resample.ia(t_genclone4, reps = 999, n=(nrow(as.data.frame(t_genclone1))-1))
+resmpl_ia_ss5_t <- resample.ia(t_genclone5, reps = 999, n=(nrow(as.data.frame(t_genclone1))-1))
+resmpl_ia_ss6_t <- resample.ia(t_genclone6, reps = 999, n=(nrow(as.data.frame(t_genclone1))-1))
+resmpl_ia_ss7_t <- resample.ia(t_genclone7, reps = 999, n=(nrow(as.data.frame(t_genclone1))-1))
+resmpl_ia_ss8_t <- resample.ia(t_genclone8, reps = 999, n=(nrow(as.data.frame(t_genclone1))-1))
+resmpl_ia_ss9_t <- resample.ia(t_genclone9, reps = 999, n=(nrow(as.data.frame(t_genclone1))-1))
+resmpl_ia_ss10_t <- resample.ia(t_genclone10, reps = 999, n=(nrow(as.data.frame(t_genclone1))-1))
+resmpl_ia_t <- rbind(resmpl_ia_ss1_t,
+    resmpl_ia_ss2_t,
+    resmpl_ia_ss3_t,
+    resmpl_ia_ss4_t,
+    resmpl_ia_ss5_t,
+    resmpl_ia_ss6_t,
+    resmpl_ia_ss7_t,
+    resmpl_ia_ss8_t,
+    resmpl_ia_ss9_t,
+    resmpl_ia_ss10_t)
+```
+
+
+#writing out files for later analysis and figure making
+```{r, eval=F}
+write_delim(resmpl_ia_e, file = "results/E_isolates_ia_vals.txt", delim = "\t")
+#write_delim(resmpl_ia_f, file = "results/F_isolates_ia_vals.txt", delim = "\t")
+#write_delim(resmpl_ia_g, file = "results/G_isolates_ia_vals.txt", delim = "\t")
+write_delim(resmpl_ia_h, file = "results/H_isolates_ia_vals.txt", delim = "\t")
+#write_delim(resmpl_ia_i, file = "results/I_isolates_ia_vals.txt", delim = "\t")
+#write_delim(resmpl_ia_k, file = "results/K_isolates_ia_vals.txt", delim = "\t")
+#write_delim(resmpl_ia_l, file = "results/L_isolates_ia_vals.txt", delim = "\t")
+write_delim(resmpl_ia_m, file = "results/M_isolates_ia_vals.txt", delim = "\t")
+write_delim(resmpl_ia_n, file = "results/N_isolates_ia_vals.txt", delim = "\t")
+write_delim(resmpl_ia_o, file = "results/O_isolates_ia_vals.txt", delim = "\t")
+write_delim(resmpl_ia_p, file = "results/P_isolates_ia_vals.txt", delim = "\t")
+write_delim(resmpl_ia_q, file = "results/Q_isolates_ia_vals.txt", delim = "\t")
+write_delim(resmpl_ia_r, file = "results/R_isolates_ia_vals.txt", delim = "\t")
+#write_delim(resmpl_ia_s, file = "results/S_isolates_ia_vals.txt", delim = "\t")
+write_delim(resmpl_ia_t, file = "results/T_isolates_ia_vals.txt", delim = "\t")
+write_delim(resmpl_ia_sing, file = "results/Singleton_isolates_ia_vals.txt", delim = "\t")
+
+resmpl_ia_e <- read_delim(file = "results/E_isolates_ia_vals.txt", delim = "\t")
+resmpl_ia_h <- read_delim(file = "results/H_isolates_ia_vals.txt", delim = "\t")
+resmpl_ia_m <- read_delim(file = "results/M_isolates_ia_vals.txt", delim = "\t")
+resmpl_ia_n <- read_delim(file = "results/N_isolates_ia_vals.txt", delim = "\t")
+resmpl_ia_o <- read_delim(file = "results/O_isolates_ia_vals.txt", delim = "\t")
+resmpl_ia_p <- read_delim(file = "results/P_isolates_ia_vals.txt", delim = "\t")
+resmpl_ia_q <- read_delim(file = "results/Q_isolates_ia_vals.txt", delim = "\t")
+resmpl_ia_r <- read_delim(file = "results/R_isolates_ia_vals.txt", delim = "\t")
+resmpl_ia_t <- read_delim(file = "results/T_isolates_ia_vals.txt", delim = "\t")
+resmpl_ia_sing <- read_delim(file = "results/Singleton_isolates_ia_vals.txt", delim = "\t")
+
+std(resmpl_ia_e$rbarD)
+std(resmpl_ia_h$rbarD)
+std(resmpl_ia_m$rbarD)
+std(resmpl_ia_n$rbarD)
+std(resmpl_ia_o$rbarD)
+std(resmpl_ia_p$rbarD)
+std(resmpl_ia_q$rbarD)
+std(resmpl_ia_r$rbarD)
+std(resmpl_ia_t$rbarD)
+std(resmpl_ia_sing$rbarD)
+
+
+
+```
+
+#plotting
+```{r, eval=F}
+resmpl_ia_e$name <- "E"
+#resmpl_ia_f$name <- "F"
+resmpl_ia_h$name <- "H"
+#resmpl_ia_k$name <- "K"
+resmpl_ia_m$name <- "M"
+resmpl_ia_n$name <- "N"
+resmpl_ia_o$name <- "O"
+resmpl_ia_p$name <- "P"
+resmpl_ia_q$name <- "Q"
+resmpl_ia_r$name <- "R"
+resmpl_ia_t$name <- "T"
+resmpl_ia_sing$name <- "SING"
+
+complete_ia <- rbind(
+  resmpl_ia_e,
+#resmpl_ia_f,
+resmpl_ia_h,
+#resmpl_ia_k,
+resmpl_ia_m,
+resmpl_ia_n,
+resmpl_ia_o,
+resmpl_ia_p,
+resmpl_ia_q,
+resmpl_ia_r,
+resmpl_ia_t,
+resmpl_ia_sing
+)
+
+t <- ggplot(complete_ia, aes(x=rbarD, y=Ia)) +
+  geom_point(aes(color=name)) +
+  scale_color_brewer(palette = "Paired")
+
+#######################################
+
+resmpl_ia_all$name <- "All"
+test <- rbind(complete_ia, resmpl_ia_all)
+
+t <- ggplot(complete_ia, aes(x=name, y=rbarD)) +
+  geom_boxplot(aes(fill=name)) +
+  scale_color_brewer(palette = "Paired") +
+  theme_bw() +
+  xlab("Lineage") +
+  ylab(expression(Index~of~Association~(R[d])))
+
+```
+
