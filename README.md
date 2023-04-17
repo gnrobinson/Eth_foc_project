@@ -1,18 +1,8 @@
----
-title: Bioinformatic Pipeline - "Hiding in Plain Sight - Genome-wide recombination
+# title: Bioinformatic Pipeline - "Hiding in Plain Sight - Genome-wide recombination
   and a dynamic accessory genome drive diversity in Fusarium oxysporum fsp ciceris"
-author: "Fayyaz A, Robinson G, Chang PL, Bekele D, Yimer SM, Carrasquilla-Garcia N, Negash K, Anand K. Surendrarao, Eric J.B. von Wettberg, Robbertse B, Seid Ahmedi, Tesfaye K, Fikre Ab, Farmer AD and Cook DR"
-#date: '2023-02-07'
-output:
- # rmdformats::readthedown:
- #   toc_depth: 5
- #   self_contained: true
- #   thumbnails: false
- #   lightbox: true
- #   gallery: true
- #   highlight: tango
-  html_document: default
-  #pdf_document: default
+## author: "Fayyaz A, Robinson G, Chang PL, Bekele D, Yimer SM, Carrasquilla-Garcia N, Negash K, Anand K. Surendrarao, Eric J.B. von Wettberg, Robbertse B, Seid Ahmedi, Tesfaye K, Fikre Ab, Farmer AD and Cook DR"
+## date: '2023-02-07'
+
 ---
 
 ```{r setup, include=FALSE}
