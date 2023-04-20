@@ -260,7 +260,7 @@ cut -d'|' -f1,1 Fo-Et-0000.all.maker.transcripts.fasta | sed 's!-RA!!g' >> Fo-Et
 ##Repeated the same for rest of the genome
 ```
   
-#### ii. Gene Enrichment analysus was performed using BLAST2GO
+#### ii. Gene Enrichment analysis was performed using BLAST2GO
   
 Implemented using GUI software (https://www.blast2go.com/)
   
@@ -1033,9 +1033,9 @@ vcftools --gzvcf $IN.vcf.gz --TajimaD  1 --out $OUT
 
 Genetic differentiation (Fst) is a commonly used proxy to determine gene flow between multiple populations, because more gene flow = lower genetic differentiation. 
 
-We wanted to understand the levels of genetic differentiation between different clonal subgroups (and therefore estimate the level of gene flow between purely clonal lineages). The idea behind this is to understand whether gene flow is still ongoing even after a transition to clonality. As a result, the Fst of sequence variation (core SNPs) was compared to presence/absence variation. Hypothesis: If horizontal gene transfer is ongoing, we expect to see lower genetic differentiation between clonal subgroups that core SNP variation. Furthermore, they should display different demographic histories (i.e. the two Fst sets should be correlated). 
+We wanted to understand the levels of genetic differentiation between different clonal subgroups (and therefore estimate the level of gene flow between purely clonal lineages). The idea behind this is to understand whether gene flow is still ongoing even after a transition to clonality. As a result, the Fst of sequence variation (nongenic core SNPs - Figure 6) was compared to presence/absence variation. Hypothesis: If gene flow is ongoing, we expect to see lower genetic differentiation between clonal subgroups that core SNP variation. Furthermore, they should display different demographic histories (i.e. the two Fst sets should be correlated). 
 
-To account for genic selection, we included a supplemental figure displaying sequence variation of conserved orthologs. This should serve as a sandwich with the core gene Fst (under highest purifying selection) and core read-mapped Fst (under no selection) serving as the two extremes. If selection is the only reason for differentiation, we expect that the accessory gene variation to be sandwiched between these two extremes. 
+To account for the role that genic selection, we included a supplemental figure (Supplemental Figure 3) displaying sequence variation of conserved orthologs. This should serve as a sandwich with the core gene Fst (under highest purifying selection) and core read-mapped Fst (under no selection) serving as the two extremes. If selection is the only reason for lower genetic differentiation (Figure 6), we expect that the accessory gene presence-absence genetic differentiation to be sandwiched between the Fst values in Figure 6A and Supplemental Figure 3A. Since the accessory genome is less differentiated than both core SNP sets, we can deduce that neither selection or genome-wide recombination is the primary mechanism diversifying the accessory genome. Either gene flow is ongoing or ancestral gene loss is driving diversity in the accessory genome in our Ethiopian F. oxysporum collection.
 
 We used custom R scripts to calculate weighted Fst values. The input files for each R script are VCF files (haplotype) or presence/absence matrix (coverage) containing only specified subgroups.
 
@@ -1057,6 +1057,37 @@ One can see that this phenomenon is not due to selection exclusively in the boxp
 ![](Supplemental_Methods/selection_snps_tajD.png)
 
 ---
+
+## F. Effector Annotation
+
+Tools required:
+
+- TMHMM v2.0 (Krogh et al, 2001)
+
+- SignalP v4.1 (Petersen et al, 2011)
+
+- EffectorP (Sperschneider et al, 2022)
+
+We relied on EffectorP and previous GO term annotations (see <a id="gene_annotation"></a>B. Gene Annotation, Part II) to understand the functional annotation and enrichment within the putative effector dataset.
+
+As recommended, SignalP and TMHMM were run on representative pangenome gene cluster sequences, prior to EffectorP. This was ensure that effectors are predicted from the secretome.
+
+```{bash, eval=F}
+# running SignalP
+for f in *.fa; do signalp -c 0 -f short -t euk $f > ${f}.signalp; done
+
+# running TMHMM
+for f in *.fa; do cat $f | cat decodeanhmm.Linux_x86_64 -f /share/apps/tmhmm-2.0c/lib/TMHMM2.0.options -modelfile /share/apps/tmhmm-2.0c/lib/TMHMM2.0.model > ${f}.tmhmm; done
+
+#filtering correct sequences
+cat *.signalp | awk '($0 !~ "SignalP-TM"){print}' > putative_secrete.list
+for i in $(readline);do cat $i >> putative_secrete.fa; done
+while read -r line; do $1=fasta | cat $fasta >> putative_secrete.fa; done < putative_secrete.list
+
+# running effectorP
+python EffectorP.py -i putative_secrete.fasta
+
+```
 
 # <a id="refs"></a>6. References
 
@@ -1092,6 +1123,8 @@ Kamvar, Z.N., Tabima, J.F. and Grünwald, N.J., 2014. Poppr: an R package for ge
 
 Knaus, B.J. and Grünwald, N.J., 2017. vcfr: a package to manipulate and visualize variant call format data in R. Molecular ecology resources, 17(1), pp.44-53.
 
+Krogh, A., Larsson, B., Von Heijne, G. and Sonnhammer, E.L., 2001. Predicting transmembrane protein topology with a hidden Markov model: application to complete genomes. Journal of molecular biology, 305(3), pp.567-580.
+
 Li, H., Handsaker, B., Wysoker, A., Fennell, T., Ruan, J., Homer, N., Marth, G., Abecasis, G., Durbin, R. and 1000 Genome Project Data Processing Subgroup, 2009. The sequence alignment/map format and SAMtools. bioinformatics, 25(16), pp.2078-2079.
 
 Li, H., 2013. Aligning sequence reads, clone sequences and assembly contigs with BWA-MEM. arXiv preprint arXiv:1303.3997.
@@ -1099,6 +1132,8 @@ Li, H., 2013. Aligning sequence reads, clone sequences and assembly contigs with
 Marçais, G., Delcher, A.L., Phillippy, A.M., Coston, R., Salzberg, S.L. and Zimin, A., 2018. MUMmer4: A fast and versatile genome alignment system. PLoS computational biology, 14(1), p.e1005944.
 
 McKenna, A., Hanna, M., Banks, E., Sivachenko, A., Cibulskis, K., Kernytsky, A., Garimella, K., Altshuler, D., Gabriel, S., Daly, M. and DePristo, M.A., 2010. The Genome Analysis Toolkit: a MapReduce framework for analyzing next-generation DNA sequencing data. Genome research, 20(9), pp.1297-1303.
+
+Petersen, T.N., Brunak, S., Von Heijne, G. and Nielsen, H., 2011. SignalP 4.0: discriminating signal peptides from transmembrane regions. Nature methods, 8(10), pp.785-786.
 
 Pritchard, J.K., Stephens, M. and Donnelly, P., 2000. Inference of population structure using multilocus genotype data. Genetics, 155(2), pp.945-959.
 
